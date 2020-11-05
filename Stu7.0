@@ -1,0 +1,537 @@
+//项目名称：学生成绩管理系统V3.0
+//学生：薛皓文 计科8班 200110804
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define N 30
+#define MAX_NAME 10
+#define CLASS 6//规定数组大小
+void Menu(void);
+void swap(int* x, int* y);
+void Swap(long int* x, long int* y);
+int Input(int score[][CLASS], long int number[], int iScore[][CLASS], long int iNumber[], char name[][MAX_NAME], char iName[][MAX_NAME], int num);
+void Output(int score[][CLASS], long int number[], char name[][MAX_NAME], int num, int lesson);
+void Calculate(int score[][CLASS], int num, int lesson);
+void CalStu(int score[][CLASS], int num, int lesson, char name[][MAX_NAME]);
+void Sort(int score[][CLASS], long int number[], int num, int lesson, int(*compare)(int a, int b), char name[][MAX_NAME]);
+int AsSort(int a, int b);
+int DeSort(int a, int b);
+void NuSort(int score[][CLASS], long int number[], int num, char name[][MAX_NAME], int lesson);
+void NaSort(int score[][CLASS], long int number[], int num, char name[][MAX_NAME], int lesson);
+int SeNum(int score[][CLASS], long int number[], int num, long int id, char name[][MAX_NAME], int lesson);
+int SeNam(int score[][CLASS], long int number[], int num, char NAME[MAX_NAME], char name[][MAX_NAME], int lesson);
+void Rate(int score[][CLASS], int num, int lesson);
+int main()
+{
+	printf("Number:20010804\nsubject No.7\n\n"); //项目名称
+	int choice;
+	long int id;
+	int ret, Ret_choice, Ret_num, num = 0, lesson = 0;
+	char name[N][MAX_NAME], iName[N][MAX_NAME];
+	int score[N][CLASS], iScore[N][CLASS];
+	long int number[N], iNumber[N];
+	do {
+		Menu();
+		Output(iScore, iNumber, iName, num, lesson);
+		printf("Please enter your choice:");
+		do
+		{
+			Ret_choice = scanf("%d", &choice);
+			if (Ret_choice != 1 || choice > 11 || choice < 0)
+			{
+				printf("Input error!\nPlease enter your choice again:");
+				while (getchar() != '\n');
+			}
+		} while (Ret_choice != 1 || choice > 11 || choice < 0);//保证正确输入
+		switch (choice)
+		{
+		case 0:
+			exit(0);
+		case 1:
+			printf("Please input the number of students(number<=30):");
+			do
+			{
+				Ret_num = scanf("%d", &num);
+				if (Ret_num != 1 || num > 30 || num < 0)
+				{
+					printf("Input error!\nPlease enter again:");
+					while (getchar() != '\n');
+				}
+			} while (Ret_num != 1 || num > 30 || num < 0);//保证正确输入
+			lesson = Input(score, number, iScore, iNumber, name, iName, num);
+			break;
+		case 2:
+			Output(iScore, iNumber, iName, num, lesson);
+			break;
+		case 3:
+			Calculate(score, num, lesson);
+			break;
+		case 4:
+			CalStu(score, num, lesson, name);
+			break;
+		case 5:
+			Sort(score, number, num, lesson, DeSort, name);
+			break;
+		case 6:
+			Sort(score, number, num, lesson, AsSort, name);
+			break;
+		case 7:
+			NuSort(score, number, num, name, lesson);
+			for (int i = 0; i < num; i++)
+			{
+				printf("ID:%ld,whose name is %s\n", number[i], name[i]);
+				for (int j = 0; j < lesson; j++)
+					printf("Lesson%d's score is %d\n", j + 1, score[i][j]);
+			}
+			break;
+		case 8:
+			NaSort(score, number, num, name, lesson);
+			for (int i = 0; i < num; i++)
+			{
+				printf("Name:%s,ID:%ld\n", name[i], number[i]);
+				for (int j = 0; j < lesson; j++)
+					printf("Lesson%d's score is %d\n", j + 1, score[i][j]);
+			}
+			break;
+		case 9:
+			if (num == 0)
+			{
+				printf("Please input data first\n\n");
+			}
+			else
+			{
+				printf("Input the searching ID:");
+				int flag;
+				int sum[N] = { 0 };
+				for (int i = 0; i < num; i++)
+				{
+					for (int j = 0; j < lesson; j++)
+					{
+						sum[i] += score[i][j];
+					}
+				}
+				do
+				{
+					ret = scanf("%ld", &id);
+					if (ret != 1)
+					{
+						printf("Input error!\nPlease input the searching ID again:");
+						while (getchar() != '\n');
+					}
+				} while (ret != 1);//保证正确输入
+				flag = SeNum(score, number, num, id, name, lesson);
+				if (flag != -1)
+				{
+					printf("Rank.%d,name is %s\n", flag + 1, name[flag]);
+					for (int j = 0; j < lesson; j++)
+						printf("Lesson%d's score is %d\n", j + 1, score[flag][j]);
+				}
+				else
+					printf("Not found,the ID doesn't exist.\n");
+			}
+			break;
+		case 10:
+			if (num == 0)
+			{
+				printf("Please input data first\n");
+			}
+			else
+			{
+				printf("Input the searching name:");
+				char NAME[MAX_NAME] = { 0 };
+				int flag;
+				do
+				{
+					ret = scanf("%s", NAME);
+					if (ret != 1)
+					{
+						printf("Input error!\nPlease input the searching name again:");
+						while (getchar() != '\n');
+					}
+				} while (ret != 1);//保证正确输入
+				flag = SeNam(score, number, num, NAME, name, lesson);
+				if (flag != -1)
+				{
+					printf("Rank.%d,ID is %ld\n", flag + 1, number[flag]);
+					for (int j = 0; j < lesson; j++)
+						printf("Lesson%d's score is %d\n", j + 1, score[flag][j]);
+				}
+				else
+					printf("Not found,the name doesn't exist.\n");
+			}
+			break;
+		case 11:
+			Rate(score, num, lesson);
+			break;
+		}
+		system("pause");//暂停
+		system("cls");//清空屏幕
+	} while (choice != 0);//除用户输入0退出程序，其余输入都不应该退出
+	return 0;
+}
+//函数功能：实现菜单输出
+void Menu(void)
+{
+	printf("1.Input record\n");
+	printf("2.List record\n");
+	printf("3.Calculate total and average score of every course\n");
+	printf("4.Calculate total and average score of every student\n");
+	printf("5.Sort in descending order by total score of every student\n");
+	printf("6.Sort in ascending order by total score of every student\n");
+	printf("7.Sort in ascending order by StudentID\n");
+	printf("8.Sort in dictionary order by name\n");
+	printf("9.Search by StudentID\n");
+	printf("10.Search by name\n");
+	printf("11.Statistic analysis for every course\n");
+	printf("0.Exit\n");
+}
+//函数功能：录入每个学生的学号,考试成绩,姓名
+int Input(int score[][CLASS], long int number[], int iScore[][CLASS], long int iNumber[], char name[][MAX_NAME], char iName[][MAX_NAME], int num)
+{
+	int Ret_Id, Ret_Score, ret, lesson;
+	printf("Please input lessons(<=6):");
+	do
+	{
+		ret = scanf("%d", &lesson);
+		if (ret != 1 || lesson > 6 || lesson < 0)
+		{
+			printf("Input error!\nPlease enter again:");
+			while (getchar() != '\n');
+		}
+	} while (ret != 1 || lesson > 6 || lesson < 0);//保证正确输入
+	printf("Please input the student's name,ID and score:\n");
+	for (int i = 0; i < num; i++)
+	{
+		printf("Name:");
+		scanf("%s", name[i]);
+		do
+		{
+			printf("ID:");
+			Ret_Id = scanf("%ld", &number[i]);
+			if (Ret_Id != 1)
+			{
+				printf("Input error!\nPlease input ");
+				while (getchar() != '\n');
+			}
+		} while (Ret_Id != 1);
+		for (int j = 0; j < lesson; j++)
+		{
+			do
+			{
+				printf("Lesson%d's Score:", j + 1);
+				Ret_Score = scanf("%d", &score[i][j]);
+				if (Ret_Score != 1 || score[i][j] < 0 || score[i][j]>100)
+				{
+					printf("Input error!\nPlease input ");
+					while (getchar() != '\n');
+				}
+			} while (Ret_Score != 1 || score[i][j] < 0 || score[i][j]>100);
+		}
+		for (int j = 0; j < lesson; j++)
+		{
+			iScore[i][j] = score[i][j];
+			iNumber[i] = number[i];
+			strcpy(iName[i], name[i]);
+		}
+	}
+	return lesson;
+}
+//函数功能：输出每个学生的姓名、学号、考试成绩（按输入的顺序输出）
+void Output(int score[][CLASS], long int number[], char name[][MAX_NAME], int num, int lesson)
+{
+	if (num == 0)
+		printf("Please input data first\n");//提示先输入数据
+	else
+	{
+		for (int i = 0; i < num; i++)
+		{
+			printf("Name:%s,ID:%ld\n", name[i], number[i]);
+			for (int j = 0; j < lesson; j++)
+				printf("Lesson%d's score is %d\n", j + 1, score[i][j]);
+		}
+	}
+}
+//函数功能：计算并显示课程的总分和平均分
+void Calculate(int score[][CLASS], int num, int lesson)
+{
+	if (num == 0)
+		printf("Please input data first\n");
+	else
+	{
+		float sum[CLASS] = { 0 };
+		for (int j = 0; j < lesson; j++)
+		{
+			for (int i = 0; i < num; i++)
+			{
+				sum[j] += score[i][j];
+			}
+		}
+		for (int j = 0; j < lesson; j++)
+		{
+			printf("The total score of lesson%d is %.0f,the average score of lesson%d is %.2f\n", j + 1, sum[j], j + 1, sum[j] / num);
+		}
+	}
+}
+//函数功能：计算并显示学生的总分和平均分
+void CalStu(int score[][CLASS], int num, int lesson, char name[][MAX_NAME])
+{
+	if (num == 0)
+		printf("Please input data first\n");
+	else
+	{
+		float sum[N] = { 0 };
+		for (int i = 0; i < num; i++)
+		{
+			for (int j = 0; j < lesson; j++)
+			{
+				sum[i] += score[i][j];
+			}
+		}
+		for (int i = 0; i < num; i++)
+		{
+			printf("The total score of %s is %.0f,the average score of %s is %.2f\n", name[i], sum[i], name[i], sum[i] / num);
+		}
+	}
+}
+//函数功能：交换数值
+void Swap(long int* x, long int* y)
+{
+	long int temp;
+	temp = *x;
+	*x = *y;
+	*y = temp;
+}
+void swap(int* x, int* y)
+{
+	int temp;
+	temp = *x;
+	*x = *y;
+	*y = temp;
+}
+//函数功能：排列成绩
+void Sort(int score[][CLASS], long int number[], int num, int lesson, int(*compare)(int a, int b), char name[][MAX_NAME])
+{
+	if (num == 0)
+		printf("Please input data first\n\n");
+	else
+	{
+		int k;
+		int sum[N] = { 0 };
+		for (int i = 0; i < num; i++)
+		{
+			for (int j = 0; j < lesson; j++)
+			{
+				sum[i] += score[i][j];
+			}
+		}
+		for (int i = 0; i < num - 1; i++)
+		{
+			k = i;
+			for (int j = i + 1; j < num; j++)
+			{
+				if ((*compare)(sum[j], sum[k]))//函数指针
+					k = j;
+			}
+			if (k != i)
+			{
+				Swap(&number[k], &number[i]);
+				swap(&sum[k], &sum[i]);
+				for (int m = 0; m < lesson; m++)
+					swap(&score[k][m], &score[i][m]);
+				char temp[MAX_NAME] = { 0 };
+				strcpy(temp, name[k]);
+				strcpy(name[k], name[i]);
+				strcpy(name[i], temp);
+			}
+		}
+		for (int p = 0; p < num; p++)
+			printf("The NO.%d is %d,name is %s,ID is %ld\n", p + 1, sum[p], name[p], number[p]);
+	}
+}
+//按升序排序
+int AsSort(int a, int b)
+{
+	return a < b;
+}
+//按降序排序
+int DeSort(int a, int b)
+{
+	return a > b;
+}
+//函数功能：按学号由小到大排出成绩表
+void NuSort(int score[][CLASS], long int number[], int num, char name[][MAX_NAME], int lesson)
+{
+	if (num == 0)
+		printf("Please input data first\n\n");
+	else
+	{
+		int k, i, j;
+		for (i = 0; i < num - 1; i++)
+		{
+			k = i;
+			for ( j = i + 1; j < num; j++)
+			{
+				if (number[j] < number[k])
+					k = j;
+			}
+			if (k != i)
+			{
+				Swap(&number[k], &number[i]);
+				for (int m = 0; m < lesson; m++)
+					swap(&score[k][m], &score[i][m]);
+				char temp[MAX_NAME] = { 0 };
+				strcpy(temp, name[k]);
+				strcpy(name[k], name[i]);
+				strcpy(name[i], temp);
+			}
+		}
+	}
+}
+//函数功能：按姓名字母表顺序排出成绩表
+void NaSort(int score[][CLASS], long int number[], int num, char name[][MAX_NAME], int lesson)
+{
+	if (num == 0)
+		printf("Please input data first\n\n");
+	else
+	{
+		int i, j;
+		char temp[MAX_NAME] = { 0 };
+		for (i = 0; i < num - 1; i++)
+		{
+			for (j = i + 1; j < num; j++)
+			{
+				if (strcmp(name[j], name[i]) < 0)
+				{
+					strcpy(temp, name[j]);
+					strcpy(name[j], name[i]);
+					strcpy(name[i], temp);
+					for (int m = 0; m < lesson; m++)
+						swap(&score[i][m], &score[j][m]);
+					Swap(&number[i], &number[j]);
+				}
+			}
+		}
+	}
+}
+//函数功能：遍历法查找姓名
+int SeNam(int score[][CLASS], long int number[], int num, char NAME[MAX_NAME], char name[][MAX_NAME], int lesson)
+{
+	int k, i;
+	for (i = 0; i < num - 1; i++)
+	{
+		k = i;
+		int sum[N] = { 0 };
+		for (int i = 0; i < num; i++)
+		{
+			for (int j = 0; j < lesson; j++)
+			{
+				sum[i] += score[i][j];
+			}
+		}
+		for (int j = i + 1; j < num; j++)
+		{
+			if (sum[j] > sum[k])
+				k = j;
+		}
+		if (k != i)
+		{
+			Swap(&number[k], &number[i]);
+			for (int m = 0; m < lesson; m++)
+				swap(&score[k][m], &score[i][m]);
+			char temp[MAX_NAME] = { 0 };
+			strcpy(temp, name[k]);
+			strcpy(name[k], name[i]);
+			strcpy(name[i], temp);
+		}
+	}//先对数组进行排序，来确定排名
+	for (int i = 0; i <= num; i++)
+	{
+		if (strcmp(NAME, name[i]) == 0)
+			return i;
+	}
+	return -1;
+}
+//函数功能：遍历法查找ID
+int SeNum(int score[][CLASS], long int number[], int num, long int id, char name[][MAX_NAME], int lesson)
+{
+	int k, i;
+	for (i = 0; i < num - 1; i++)
+	{
+		k = i;
+		int sum[N] = { 0 };
+		for (int i = 0; i < num; i++)
+		{
+			for (int j = 0; j < lesson; j++)
+			{
+				sum[i] += score[i][j];
+			}
+		}
+		for (int j = i + 1; j < num; j++)
+		{
+			if (sum[j] > sum[k])
+				k = j;
+		}
+		if (k != i)
+		{
+			Swap(&number[k], &number[i]);
+			for (int m = 0; m < lesson; m++)
+				swap(&score[k][m], &score[i][m]);
+			char temp[MAX_NAME] = { 0 };
+			strcpy(temp, name[k]);
+			strcpy(name[k], name[i]);
+			strcpy(name[i], temp);
+		}
+	}//先对数组进行排序，来确定排名
+	for (int i = 0; i <= num; i++)
+	{
+		if ( id == number[i])
+			return i;
+	}
+	return -1;
+}
+//函数功能：按优秀（90-100分、良好（80-89分）、中等（70-79分）、及格（60 -69分）、不及格(0-59分)5个类别，对每门课程分别统计每个类别的人数以及所占的百分比
+void Rate(int score[][CLASS], int num, int lesson)
+{
+
+	if (num == 0)
+		printf("Please input data first\n\n");
+	else
+	{
+		int i, j;
+		for (j = 0; j < lesson; j++)
+		{
+			float Count_Outstanding = 0.0, Count_Good = 0.0, Count_Medium = 0.0, Count_Passed = 0.0, Count_Failed = 0.0;
+			for (i = 0; i < num; i++)
+			{
+				if (score[i][j] >= 90 && score[i][j] <= 100)
+					Count_Outstanding++;
+			}
+			for (i = 0; i < num; i++)
+			{
+				if (score[i][j] >= 80 && score[i][j] <= 89)
+					Count_Good++;
+			}
+			for (i = 0; i < num; i++)
+			{
+				if (score[i][j] >= 70 && score[i][j] <= 79)
+					Count_Medium++;
+			}
+			for (i = 0; i < num; i++)
+			{
+				if (score[i][j] >= 60 && score[i][j] <= 69)
+					Count_Passed++;
+			}
+			for (i = 0; i < num; i++)
+			{
+				if (score[i][j] >= 0 && score[i][j] <= 59)
+					Count_Failed++;
+			}
+			printf("Lesson%d's analysis:\n", j + 1);
+			printf("The number of outstanding(90-100) is %.0f,the rate of outstanding is %.2f\n", Count_Outstanding, Count_Outstanding / num);
+			printf("The number of good(80-89) is %.0f,the rate of good is %.2f\n", Count_Good, Count_Good / num);
+			printf("The number of medium(70-79) is %.0f,the rate of medium is %.2f\n", Count_Medium, Count_Medium / num);
+			printf("The number of passed(60-69) is %.0f,the rate of passed is %.2f\n", Count_Passed, Count_Passed / num);
+			printf("The number of failed(0-59) is %.0f,the rate of failed is %.2f\n", Count_Failed, Count_Failed / num);
+		}
+	}
+}
